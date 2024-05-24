@@ -280,55 +280,65 @@ const facebookLogin = async (req, res) => {
 const registerAdmin = async (req, res) => {
   try {
     console.log("Request body:", req.body);
+    const { captchaToken, email, name, phone, role, password } = req.body;
 
-    const isAdded = await Admin.findOne({ email: req.body.email });
-    console.log("Admin found by email:", isAdded);
+    // Extracting the captchaToken but not performing any verification
 
+    // Check if the email is already added
+    const isAdded = await Admin.findOne({ email });
     if (isAdded) {
-      console.log("Email already added");
-
       return res.status(403).send({
         message: "This Email already Added!",
       });
-    } else {
-      console.log("Email is not already added");
-
-      const nameObject = {
-        en: req.body.name,
-      };
-
-      const newStaff = new Admin({
-        name: nameObject,
-        email: req.body.email,
-        phone: req.body.phone,
-        role: req.body.role,
-        password: bcrypt.hashSync(req.body.password),
-      });
-
-      console.log("New admin object:", newStaff);
-
-      const staff = await newStaff.save();
-      console.log("Saved admin:", staff);
-
-      const token = signInToken(staff);
-      console.log("Generated token:", token);
-
-      res.send({
-        token,
-        _id: staff._id,
-        name: staff.name.en,
-        email: staff.email,
-        role: staff.role,
-        joiningData: Date.now(),
-      });
     }
+
+    const nameObject = {
+      en: name,
+    };
+    const newStaff = new Admin({
+      name: nameObject,
+      email,
+      phone,
+      role,
+      password: bcrypt.hashSync(password, 10),
+    });
+
+    const staff = await newStaff.save();
+    // Send welcome email
+    sendWelcomeEmail(email);
+
+    const token = signInToken(staff);
+    res.send({
+      token,
+      _id: staff._id,
+      name: staff.name.en,
+      email: staff.email,
+      role: staff.role,
+      joiningData: Date.now(),
+    });
   } catch (err) {
     console.error("Error in registerAdmin:", err);
-
     res.status(500).send({
       message: err.message,
     });
   }
+};
+
+const sendWelcomeEmail = async (email) => {
+  const body = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: "Welcome to Our Website",
+    html: `<h2>Welcome to Our Website!</h2>
+      <p>Thank you for registering with us. We're excited to have you on board.</p>
+      <p>Feel free to explore our website and let us know if you have any questions or need assistance.</p>
+      <p>Best regards,<br/>The Admin Team</p>`,
+  };
+
+  console.log("Sending Welcome Email:", body);
+
+  const message = "Welcome email sent successfully!";
+  sendEmail(body, null, message);
 };
 
 const loginAdmin = async (req, res) => {
