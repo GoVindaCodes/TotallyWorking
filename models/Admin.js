@@ -65,6 +65,10 @@ const adminSchema = new mongoose.Schema(
       type: Date,
       required: false,
     },
+      captchaToken: {
+      type: String,
+      required: false,
+    },
   },
   {
     timestamps: true,
