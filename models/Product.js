@@ -379,14 +379,14 @@ const productDataSchema = new mongoose.Schema({
     required: true,
   },
   paymentMethods: [paymentMethodSchema],
-  // addressEntry: {
-  //   type: addressSchema,
-  //   required: false,
-  // },
-  address: {
-    type: String,
+  addressEntry: {
+    type: addressSchema,
     required: false,
   },
+  // address: {
+  //   type: String,
+  //   required: false,
+  // },
   orderSummary: {
     type: orderSummarySchema,
     required: false,
